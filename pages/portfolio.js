@@ -366,7 +366,7 @@ export default function PortfolioPage() {
                     
                     return (
                       <div 
-                        key={`mobile-${holding._id}`} 
+                        key={`mobile-${holding.teamId}-${index}`} 
                         className="flex-shrink-0 w-[85vw] snap-center mx-2 first:ml-4 last:mr-4"
                       >
                         <div 
@@ -473,13 +473,13 @@ export default function PortfolioPage() {
                     );
                   })}
                 </div>
-                
+
                 {/* Card indicator - dots */}
                 {sortedHoldings.length > 0 && (
                   <div className="flex justify-center mt-2 space-x-1">
-                    {sortedHoldings.map((_, i) => (
+                    {sortedHoldings.map((holding, i) => (
                       <div 
-                        key={`indicator-${i}`} 
+                        key={`indicator-${holding.teamId}-${i}`} 
                         className={`h-1.5 rounded-full transition-all duration-300 ${i === activeCardIndex ? 'w-4 bg-cyan-400' : 'w-1.5 bg-gray-600'}`}
                         onClick={() => {
                           if (scrollContainerRef.current) {
@@ -495,93 +495,11 @@ export default function PortfolioPage() {
                     ))}
                   </div>
                 )}
-                
-                {/* Scroll hint arrows - only shown when there are multiple cards */}
-                {sortedHoldings.length > 1 && (
-                  <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 flex justify-between px-2 pointer-events-none">
-                    <div className={`p-2 rounded-full bg-gray-900/50 backdrop-blur-sm ${activeCardIndex === 0 ? 'opacity-30' : 'opacity-70'}`}>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </div>
-                    <div className={`p-2 rounded-full bg-gray-900/50 backdrop-blur-sm ${activeCardIndex === sortedHoldings.length - 1 ? 'opacity-30' : 'opacity-70'}`}>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                )}
               </div>
-              
-              {/* Current card info */}
-              {sortedHoldings.length > 0 && (
-                <div className="text-center text-xs text-cyan-400/70 mt-1">
-                  {activeCardIndex + 1} of {sortedHoldings.length}
-                </div>
-              )}
             </div>
           </>
         )}
       </div>
-      
-      {/* Add animations */}
-      <style jsx>{`
-        @keyframes shine {
-          0% { background-position: -100px; }
-          60% { background-position: 200px; }
-          100% { background-position: 200px; }
-        }
-        
-        .price-shine {
-          background: linear-gradient(to right, 
-            rgba(255,255,255,0) 0%,
-            rgba(255,255,255,0.8) 50%,
-            rgba(255,255,255,0) 100%);
-          background-size: 200px 100%;
-          background-repeat: no-repeat;
-          animation: shine 3s ease-in-out infinite;
-        }
-        
-        .progress-shine {
-          background: linear-gradient(to right, 
-            rgba(255,255,255,0) 0%,
-            rgba(255,255,255,0.3) 50%,
-            rgba(255,255,255,0) 100%);
-          background-size: 200px 100%;
-          background-repeat: no-repeat;
-          animation: shine 3s ease-in-out infinite;
-        }
-        
-        .drop-shadow-glow {
-          filter: drop-shadow(0 0 8px rgba(103, 232, 249, 0.6));
-        }
-        
-        /* Hide scrollbar but maintain functionality */
-        .scrollbar-hide {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;  /* Chrome, Safari and Opera */
-        }
-        
-        /* Improve touch scrolling on mobile */
-        @media (max-width: 640px) {
-          .snap-x {
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-          }
-          
-          .snap-center {
-            scroll-snap-align: center;
-          }
-          
-          /* Add momentum scrolling for iOS devices */
-          * {
-            -webkit-overflow-scrolling: touch;
-          }
-        }
-      `}</style>
     </main>
   );
-} 
+}

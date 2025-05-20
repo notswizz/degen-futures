@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import BondingCurveChart from './BondingCurveChart';
+import { generateCurvePoints, getPriceImpact, getAveragePrice } from '../lib/bondingCurve';
 
 export default function BuySellModal({ 
   open, 
@@ -10,16 +12,44 @@ export default function BuySellModal({
   error, 
   preview,
   shares,
-  onSharesChange
+  onSharesChange,
+  totalSupply = 0
 }) {
   // If shares and onSharesChange are not provided, use local state for backward compatibility
   const [localShares, setLocalShares] = useState('');
   const controlledMode = shares !== undefined && onSharesChange !== undefined;
+  const [curvePoints, setCurvePoints] = useState([]);
+  const [priceImpact, setPriceImpact] = useState(null);
+  const [averagePrice, setAveragePrice] = useState(0);
   
-  // Reset local shares when modal opens
+  // Reset local shares and update curve data when modal opens
   useEffect(() => {
-    if (open) setLocalShares('');
-  }, [open]);
+    if (open) {
+      setLocalShares('');
+      if (totalSupply !== undefined) {
+        // Generate a wider range of points to show "to infinity"
+        const points = generateCurvePoints(totalSupply, 50);
+        setCurvePoints(points);
+      }
+      setAveragePrice(0);
+    }
+  }, [open, totalSupply]);
+  
+  // Update price impact and average price when shares change
+  useEffect(() => {
+    const sharesNum = Number(controlledMode ? shares : localShares) || 0;
+    if (sharesNum > 0 && totalSupply !== undefined) {
+      const impact = getPriceImpact(totalSupply, sharesNum, type === 'buy');
+      setPriceImpact(impact);
+      
+      // Calculate average price
+      const avgPrice = getAveragePrice(totalSupply, sharesNum, type === 'buy');
+      setAveragePrice(avgPrice);
+    } else {
+      setPriceImpact(null);
+      setAveragePrice(0);
+    }
+  }, [shares, localShares, totalSupply, type, controlledMode]);
 
   if (!open || !team) return null;
 
@@ -84,6 +114,39 @@ export default function BuySellModal({
         </div>
         
         <div className="p-6">
+          {/* Bonding Curve Chart (Shares 1-1000) */}
+          <div className="mb-4">
+            <h3 className="text-sm font-medium text-gray-400 mb-1">Bonding Curve</h3>
+            <BondingCurveChart 
+              currentSupply={totalSupply}
+              shares={Number(currentShares) || 0}
+              isBuy={isBuy}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+              fixed1To1000={true}
+            />
+            
+            {priceImpact && Number(currentShares) > 0 && (
+              <div className="text-xs text-gray-400 mt-2 space-y-1 bg-gray-800/50 p-2 rounded-lg border border-gray-700/50">
+                <div className="flex justify-between">
+                  <span>Price Range:</span>
+                  <div>
+                    <span className="text-gray-300">${priceImpact.startPrice.toFixed(4)}</span>
+                    <span className="mx-1">→</span>
+                    <span className="text-gray-300">${priceImpact.endPrice.toFixed(4)}</span>
+                    <span className={`ml-2 ${priceImpact.percentChange > 0 ? "text-green-400" : "text-red-400"}`}>
+                      {priceImpact.percentChange > 0 ? "+" : ""}{priceImpact.percentChange.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <span>Average Price:</span>
+                  <span className="text-cyan-300">${averagePrice.toFixed(4)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+          
           <form
             onSubmit={e => {
               e.preventDefault();
@@ -91,45 +154,55 @@ export default function BuySellModal({
             }}
             className="flex flex-col gap-4"
           >
-            <label className="flex flex-col gap-1 text-gray-200">
-              <span className="font-medium">{action} how many shares?</span>
-              <input
-                type="number"
-                min="1"
-                step="1"
-                className="p-3 rounded-lg bg-gray-800 text-white border focus:outline-none focus:ring-2 text-lg transition"
-                style={{ 
-                  borderColor: `${actionColor}40`,
-                  boxShadow: `0 0 0 1px ${actionColor}10`,
-                  caretColor: actionColor
-                }}
-                value={currentShares}
-                onChange={handleSharesChange}
-                required
-                autoFocus
-              />
-            </label>
+            <div className="flex flex-col gap-1">
+              <label className="font-medium text-gray-200 text-sm">
+                {action} how many shares?
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  className="p-4 rounded-lg bg-gray-800 text-white border focus:outline-none focus:ring-2 text-lg transition w-full text-center font-mono"
+                  style={{ 
+                    borderColor: `${actionColor}40`,
+                    boxShadow: `0 0 0 1px ${actionColor}10`,
+                    caretColor: actionColor
+                  }}
+                  value={currentShares}
+                  onChange={handleSharesChange}
+                  required
+                  autoFocus
+                />
+              </div>
+            </div>
             
             {preview && (
               <div 
-                className="rounded-lg p-4 flex flex-col gap-2 text-sm"
+                className="rounded-lg p-4 flex flex-col gap-2 text-sm mt-1"
                 style={{ 
-                  backgroundColor: `${secondaryColor}20`, 
+                  backgroundColor: `${secondaryColor}15`, 
                   borderLeft: `3px solid ${primaryColor}`,
                   color: 'white'
                 }}
               >
-                <div className="flex justify-between">
-                  <span>{isBuy ? 'Cost' : 'Refund'}</span>
-                  <span>${preview.amount.toFixed(2)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">{isBuy ? 'Cost' : 'Refund'}</span>
+                  <span className="text-lg font-semibold">${preview.amount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>2% Fee</span>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-400">2% Fee</span>
                   <span style={{ color: '#ff6b6b' }}>${preview.fee.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg" style={{ color: primaryColor }}>
+                <div className="flex justify-between items-center font-bold text-lg border-t border-gray-700 pt-2 mt-1" 
+                  style={{ color: primaryColor }}
+                >
                   <span>Total</span>
                   <span>${preview.total.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs pt-1 text-gray-400">
+                  <span>Per Share (Avg)</span>
+                  <span className="text-cyan-300 font-mono">${(preview.amount / Number(currentShares)).toFixed(4)}</span>
                 </div>
               </div>
             )}

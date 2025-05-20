@@ -3,6 +3,7 @@ import TeamCard from '../components/TeamCard';
 import BuySellModal from '../components/BuySellModal';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/router';
+import { getBuyCost, getSellRefund } from '../lib/bondingCurve';
 
 export default function MarketPage() {
   const [teams, setTeams] = useState([]);
@@ -108,14 +109,11 @@ export default function MarketPage() {
     }
   };
 
-  // Setup automatic refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshKey(oldKey => oldKey + 1);
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
+  // Remove automatic refresh and add manual refresh function
+  const refreshData = () => {
+    console.log('Manual refresh triggered');
+    setRefreshKey(oldKey => oldKey + 1);
+  };
 
   // Fetch user holdings if logged in
   useEffect(() => {
@@ -190,19 +188,13 @@ export default function MarketPage() {
     let amount = 0, fee = 0, total = 0;
     
     if (modal.type === 'buy') {
-      // replicate getBuyCost
-      const basePrice = 1, slope = 1;
-      const a = totalSupply;
-      const b = totalSupply + shares;
-      amount = basePrice * (b - a) + slope * ((1 + b) * Math.log(1 + b) - (1 + a) * Math.log(1 + a) - (b - a));
+      // Use new getBuyCost function
+      amount = getBuyCost(totalSupply, shares);
       fee = amount * 0.02;
       total = amount + fee;
     } else {
-      // replicate getSellRefund
-      const basePrice = 1, slope = 1;
-      const a = totalSupply - shares;
-      const b = totalSupply;
-      amount = basePrice * (b - a) + slope * ((1 + b) * Math.log(1 + b) - (1 + a) * Math.log(1 + a) - (b - a));
+      // Use new getSellRefund function
+      amount = getSellRefund(totalSupply, shares);
       fee = amount * 0.02;
       total = amount - fee;
     }
@@ -439,7 +431,7 @@ export default function MarketPage() {
           </div>
           
           <button 
-            onClick={() => setRefreshKey(k => k + 1)}
+            onClick={refreshData}
             className="bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -476,7 +468,7 @@ export default function MarketPage() {
             </button>
             
             <button 
-              onClick={() => setRefreshKey(k => k + 1)}
+              onClick={refreshData}
               className="bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded-full p-2 flex items-center transition-all"
               aria-label="Refresh"
             >
@@ -767,6 +759,7 @@ export default function MarketPage() {
         preview={modalPreview}
         shares={shares}
         onSharesChange={handleSharesChange}
+        totalSupply={modal.team ? modal.team.totalSupply : 0}
       />
       
       {/* Add fadeIn animation to global CSS for the toast */}

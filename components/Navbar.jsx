@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import { isAuthenticated } from '../lib/auth';
 import { jwtDecode } from 'jwt-decode';
+import BalanceModal from './BalanceModal';
 
 const navLinks = [
   { href: '/market', label: 'Market' },
@@ -17,17 +18,32 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [authSource, setAuthSource] = useState('none');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [balanceModalOpen, setBalanceModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [balance, setBalance] = useState(0);
 
-  // Force a refresh of auth state when route changes
+  // Prevent any automatic refreshing entirely by removing user from dependencies
   useEffect(() => {
+    console.log('Route changed');
+    // Just check auth without refreshing data
     checkAuth();
     // Close mobile menu on route change
     setMobileMenuOpen(false);
   }, [router.asPath]);
 
-  // Check auth state using multiple sources
+  // Initial auth check on component mount (once only)
+  useEffect(() => {
+    console.log('Initial auth check');
+    checkAuth();
+    
+    // Add logging for every render to track what's causing re-renders
+    console.log('Navbar rendered at:', new Date().toISOString());
+  }, []);
+
+  // Check auth state using multiple sources - make pure function with no side effects
   const checkAuth = () => {
-    console.log('Navbar: checking authentication state');
+    console.log('Navbar: checking authentication state at:', new Date().toISOString());
     
     // Try to get token from cookies
     const token = Cookies.get('token');
@@ -39,6 +55,9 @@ export default function Navbar() {
         const decoded = jwtDecode(token);
         console.log('Decoded token payload:', decoded);
         setUser(decoded);
+        // Ensure balance is a number, default to 1000 if undefined
+        const safeBalance = typeof decoded.balance === 'number' ? decoded.balance : 1000;
+        setBalance(safeBalance);
         setAuthSource('cookie');
         return;
       } catch (err) {
@@ -53,6 +72,9 @@ export default function Navbar() {
         const parsedUser = JSON.parse(storedUser);
         console.log('User from localStorage:', parsedUser);
         setUser(parsedUser);
+        // Ensure balance is a number, default to 1000 if undefined
+        const safeBalance = typeof parsedUser.balance === 'number' ? parsedUser.balance : 1000;
+        setBalance(safeBalance);
         setAuthSource('localStorage');
         return;
       }
@@ -62,6 +84,7 @@ export default function Navbar() {
     
     console.log('No authentication found');
     setUser(null);
+    setBalance(0);
     setAuthSource('none');
   };
 
@@ -78,7 +101,131 @@ export default function Navbar() {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  console.log('Render navbar. Auth state:', authSource, 'User:', user);
+  const openBalanceModal = () => {
+    // Verify user is logged in before opening modal
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    setBalanceModalOpen(true);
+    setError('');
+  };
+
+  const closeBalanceModal = () => {
+    setBalanceModalOpen(false);
+    setError('');
+  };
+
+  const handleAddBalance = async (amount) => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Get the latest token
+      const token = Cookies.get('token');
+      if (!token) {
+        throw new Error('You must be logged in to add balance');
+      }
+      
+      // Ensure amount is a proper number
+      const numericAmount = Number(amount);
+      if (isNaN(numericAmount) || numericAmount <= 0) {
+        throw new Error('Please enter a valid positive number');
+      }
+      
+      console.log('Adding to balance - amount:', numericAmount, 'type:', typeof numericAmount);
+      
+      const response = await fetch('/api/user/balance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: numericAmount }),
+        credentials: 'include' // Include cookies in the request
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add balance');
+      }
+      
+      console.log('Balance updated successfully:', data);
+      
+      // Make sure we have a balance value from the response
+      const newBalance = typeof data.balance === 'number' ? data.balance : 1000;
+      
+      // Update local state with new balance
+      setBalance(newBalance);
+      
+      // If user exists, update it with the new balance
+      if (user) {
+        const updatedUser = { ...user, balance: newBalance };
+        
+        // Update localStorage if that's where the user was stored
+        if (authSource === 'localStorage') {
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+        
+        setUser(updatedUser);
+      }
+      
+      // Close the modal after successful update
+      setBalanceModalOpen(false);
+      
+      // Single check after update (no chains)
+      checkAuth();
+    } catch (error) {
+      console.error('Error adding balance:', error);
+      setError(error.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Make refresh a purely manual operation
+  const refreshUserData = async () => {
+    try {
+      console.log('Manually refreshing user data at:', new Date().toISOString());
+      const response = await fetch('/api/auth/refresh', {
+        method: 'GET',
+        credentials: 'include',
+        // Add cache control to prevent automatic refreshes
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Refresh response:', data);
+        
+        // Force balance update from response if available
+        if (data.user && typeof data.user.balance === 'number') {
+          console.log('Setting balance from refresh:', data.user.balance);
+          setBalance(data.user.balance);
+          
+          // Update user state as well
+          if (user) {
+            setUser({
+              ...user,
+              balance: data.user.balance
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
+  // Make sure balance is always a number to avoid the toFixed() error
+  const safeBalance = typeof balance === 'number' ? balance : 0;
+
+  console.log('Render navbar. Auth state:', authSource, 'User:', user, 'Balance:', safeBalance);
 
   return (
     <nav className="w-full bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 py-3 md:py-4 px-3 md:px-6 flex items-center justify-center shadow-xl border-b-2 border-cyan-500/30 relative z-20">
@@ -115,6 +262,19 @@ export default function Navbar() {
         <div className="flex gap-2 md:gap-4 items-center">
           {user ? (
             <>
+              {/* Balance display - desktop */}
+              <button 
+                onClick={openBalanceModal}
+                className="hidden md:flex items-center gap-1 text-cyan-200 font-mono text-sm px-3 py-1 rounded bg-cyan-800/40 border border-cyan-700 hover:bg-cyan-700/50 transition-colors"
+              >
+                <span className="font-semibold">
+                  ${safeBalance.toFixed(2)}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
+              
               <span className="hidden md:inline text-cyan-200 font-mono text-sm px-3 py-1 rounded bg-cyan-900/40 border border-cyan-700">
                 {user.email}
               </span>
@@ -159,6 +319,16 @@ export default function Navbar() {
         }`}
       >
         <div className="flex flex-col p-3 gap-2">
+          {user && (
+            <button 
+              onClick={openBalanceModal}
+              className="flex items-center justify-between px-4 py-3 rounded-md bg-cyan-800/40 border border-cyan-700 text-cyan-200"
+            >
+              <span className="font-medium">Balance</span>
+              <span className="font-mono text-cyan-300 font-bold">${safeBalance.toFixed(2)}</span>
+            </button>
+          )}
+          
           {navLinks.map(({ href, label }) => {
             const active = router.pathname === href;
             return (
@@ -202,6 +372,16 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      
+      {/* Balance Modal */}
+      <BalanceModal 
+        open={balanceModalOpen} 
+        onClose={closeBalanceModal}
+        currentBalance={safeBalance}
+        onAddBalance={handleAddBalance}
+        loading={loading}
+        error={error}
+      />
       
       {/* Add animations */}
       <style jsx>{`
