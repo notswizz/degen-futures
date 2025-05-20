@@ -12,6 +12,8 @@ export default async function handler(req, res) {
     totalSupply: team.totalSupply,
     marketCap: team.marketCap,
     volume: team.volume,
+    primaryColor: team.primaryColor || '#004c54',
+    secondaryColor: team.secondaryColor || '#000000',
     price: getPrice(team.totalSupply),
   }));
   res.status(200).json(data);
