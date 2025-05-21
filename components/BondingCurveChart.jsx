@@ -11,7 +11,7 @@ import {
   ReferenceArea,
   Label
 } from 'recharts';
-import { generateFixed1to1000CurvePoints } from '../lib/bondingCurve';
+import { generateFixedLinearCurvePoints } from '../lib/bondingCurve';
 
 export default function BondingCurveChart({ 
   curvePoints = [], 
@@ -22,24 +22,26 @@ export default function BondingCurveChart({
   secondaryColor,
   fixed1To1000 = false
 }) {
-  // State to track whether we're using log scale or linear scale
-  const [useLogScale, setUseLogScale] = useState(fixed1To1000 ? false : true);
-  // State for fixed 1-1000 points
-  const [fixed1To1000Points, setFixed1To1000Points] = useState([]);
+  // State for fixed points
+  const [fixedPoints, setFixedPoints] = useState([]);
   
-  // Generate fixed 1-1000 points if in that mode
+  // Generate fixed points if in that mode
   useEffect(() => {
     if (fixed1To1000) {
-      const points = generateFixed1to1000CurvePoints();
-      setFixed1To1000Points(points);
+      const points = generateFixedLinearCurvePoints(500, 100);
+      setFixedPoints(points);
     }
   }, [fixed1To1000]);
   
   // Use appropriate points based on mode
-  const displayPoints = fixed1To1000 ? fixed1To1000Points : curvePoints;
+  const displayPoints = fixed1To1000 ? fixedPoints : 
+    (curvePoints.points ? curvePoints.points : curvePoints);
+  
+  // Check if we have transaction region data from the new curve function
+  const transactionRegion = curvePoints.transactionRegion;
   
   // Find the current point on the curve
-  const currentPoint = displayPoints.find(point => point.supply === currentSupply) || { price: 0 };
+  const currentPoint = displayPoints.find(point => Math.floor(point.supply) === Math.floor(currentSupply)) || { price: 0 };
   
   // Custom X axis tick formatter to handle exponential scale
   const formatXAxis = (tickItem) => {
@@ -72,50 +74,47 @@ export default function BondingCurveChart({
   
   // Get range for reference area (transaction impact)
   const getImpactRange = () => {
+    // If we have transaction region data from the new curve function, use it
+    if (transactionRegion) {
+      return {
+        x1: transactionRegion.start,
+        x2: transactionRegion.end,
+        isBuy: transactionRegion.isBuy
+      };
+    }
+    
+    // Legacy behavior
     if (shares <= 0) return null;
     
     if (isBuy) {
       return {
         x1: currentSupply,
-        x2: currentSupply + shares - 1
+        x2: currentSupply + shares - 1,
+        isBuy: true
       };
     } else {
       return {
         x1: currentSupply - shares,
-        x2: currentSupply - 1
+        x2: currentSupply - 1,
+        isBuy: false
       };
     }
   };
   
   const impactRange = getImpactRange();
   
-  // Determine if we're showing a very wide range (for scale adjustment)
-  const isWideRange = displayPoints.length > 0 && 
-    displayPoints[displayPoints.length - 1].supply / displayPoints[0].supply > 100;
-  
-  // Toggle the scale between linear and logarithmic
-  const toggleScale = () => {
-    setUseLogScale(!useLogScale);
-  };
-  
-  // Custom ticks for x-axis when in fixed1To1000 mode
+  // Custom ticks for x-axis when in fixed mode
   const getCustomXAxisTicks = () => {
     if (fixed1To1000) {
-      return [1, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+      return [1, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
     }
     return undefined;
   };
   
   return (
     <div className={`w-full ${fixed1To1000 ? 'h-72' : 'h-48'} mt-2 mb-4 relative`}>
-      <div className="absolute top-1 right-2 z-10 text-xs text-gray-500 flex items-center gap-2">
-        <span>{fixed1To1000 ? 'Shares 1-1000' : 'Price vs. Supply'}</span>
-        <button 
-          onClick={toggleScale}
-          className="text-xs px-2 py-0.5 rounded bg-gray-700 hover:bg-gray-600 text-white transition-colors"
-        >
-          {useLogScale ? "Linear" : "Log"}
-        </button>
+      <div className="absolute top-1 right-2 z-10 text-xs text-gray-500">
+        <span>{fixed1To1000 ? 'Shares 1-500' : 'Price vs. Supply'}</span>
       </div>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
@@ -125,8 +124,8 @@ export default function BondingCurveChart({
           <CartesianGrid strokeDasharray="3 3" stroke="#444" />
           <XAxis 
             dataKey="supply" 
-            scale={useLogScale && (isWideRange || fixed1To1000) ? "log" : "linear"}
-            domain={fixed1To1000 ? [1, 1000] : ['dataMin', 'dataMax']}
+            scale="linear"
+            domain={fixed1To1000 ? [1, 500] : ['dataMin', 'dataMax']}
             tickFormatter={formatXAxis}
             tick={{ fontSize: 10 }}
             type="number"
@@ -165,7 +164,7 @@ export default function BondingCurveChart({
           />
           
           {/* Current position marker */}
-          {(!fixed1To1000 || (fixed1To1000 && currentSupply > 0 && currentSupply <= 1000)) && (
+          {(!fixed1To1000 || (fixed1To1000 && currentSupply > 0 && currentSupply <= 500)) && (
             <ReferenceLine 
               x={currentSupply} 
               stroke={secondaryColor || "#82ca9d"} 
@@ -181,12 +180,12 @@ export default function BondingCurveChart({
           )}
           
           {/* Transaction impact area - only show if it's visible in the current scale and not in fixed mode */}
-          {impactRange && (!fixed1To1000 || (fixed1To1000 && impactRange.x1 <= 1000 && impactRange.x2 >= 1)) && (
+          {impactRange && (!fixed1To1000 || (fixed1To1000 && impactRange.x1 <= 500 && impactRange.x2 >= 1)) && (
             <ReferenceArea 
               x1={impactRange.x1} 
               x2={impactRange.x2} 
-              fill={isBuy ? `${primaryColor}40` : `${secondaryColor}40`}
-              stroke={isBuy ? primaryColor : secondaryColor}
+              fill={impactRange.isBuy ? `${primaryColor}40` : `${secondaryColor}40`}
+              stroke={impactRange.isBuy ? primaryColor : secondaryColor}
             />
           )}
         </LineChart>

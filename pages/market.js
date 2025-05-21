@@ -19,7 +19,7 @@ export default function MarketPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   // Sorting states
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
-  const [sortOption, setSortOption] = useState('default');
+  const [sortOption, setSortOption] = useState('price-desc');
   // Filter states
   const [symbolFilter, setSymbolFilter] = useState('');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
@@ -82,9 +82,7 @@ export default function MarketPage() {
     }
     
     // Apply sorting
-    if (sortOption !== 'default') {
-      result = sortTeams(result, sortOption);
-    }
+    result = sortTeams(result, sortOption);
     
     setFilteredTeams(result);
   }, [teams, symbolFilter, priceRange, volumeRange, sortOption, searchQuery]);
@@ -258,6 +256,7 @@ export default function MarketPage() {
     setSymbolFilter('');
     setPriceRange({ min: '', max: '' });
     setVolumeRange({ min: '', max: '' });
+    setSortOption('price-desc');
   };
   
   // Toggle sort dropdown
@@ -287,7 +286,7 @@ export default function MarketPage() {
       case 'volume-desc':
         return 'Volume (High-Low)';
       default:
-        return 'Default';
+        return 'Price (High-Low)';
     }
   };
   
@@ -350,80 +349,82 @@ export default function MarketPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-cyan-100 py-10 px-2">
+    <main className="min-h-screen py-8 px-3 md:px-6">
       {/* Desktop Header */}
-      <div className="hidden sm:flex justify-between items-center max-w-7xl mx-auto mb-6 px-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-widest text-cyan-300 drop-shadow-glow animate-pulse">NFL Market</h1>
+      <div className="hidden sm:flex justify-between items-center max-w-7xl mx-auto mb-8 px-1">
+        <h1 className="text-4xl md:text-5xl font-display font-bold text-white">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-brand-600">NFL</span> Market
+        </h1>
         <div className="flex items-center gap-3">
           {/* Sort Dropdown Toggle */}
           <div className="relative">
             <button 
               onClick={toggleSortDropdown}
-              className="bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
+              className="bg-night-800 hover:bg-night-700 text-white rounded-md px-4 py-2 flex items-center gap-2 transition-all border border-night-700"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-brand-400" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
               </svg>
-              Sort: {getSortOptionText()}
+              <span>Sort: {getSortOptionText()}</span>
             </button>
             
             {/* Sort Dropdown - Desktop */}
             {sortDropdownOpen && (
-              <div className="absolute right-0 mt-2 bg-gray-800 border border-cyan-500/30 rounded-lg overflow-hidden shadow-xl z-10 w-48">
-                <div className="text-xs uppercase text-cyan-500/70 px-3 py-1 border-b border-cyan-500/20">
+              <div className="absolute right-0 mt-2 bg-night-800 border border-night-700 rounded-lg overflow-hidden shadow-xl z-10 w-48 backdrop-blur-sm">
+                <div className="text-xs uppercase text-brand-400 px-3 py-1.5 border-b border-night-700">
                   Symbol
                 </div>
                 <button 
                   onClick={() => handleSortChange('symbol-asc')}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 ${sortOption === 'symbol-asc' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'}`}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-night-700 ${sortOption === 'symbol-asc' ? 'bg-brand-600/20 text-brand-300' : 'text-white'}`}
                 >
                   A-Z
                 </button>
                 <button 
                   onClick={() => handleSortChange('symbol-desc')}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 ${sortOption === 'symbol-desc' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'}`}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-night-700 ${sortOption === 'symbol-desc' ? 'bg-brand-600/20 text-brand-300' : 'text-white'}`}
                 >
                   Z-A
                 </button>
                 
-                <div className="text-xs uppercase text-cyan-500/70 px-3 py-1 border-b border-cyan-500/20 border-t border-cyan-500/20">
+                <div className="text-xs uppercase text-brand-400 px-3 py-1.5 border-b border-night-700 border-t border-night-700">
                   Price
                 </div>
                 <button 
                   onClick={() => handleSortChange('price-asc')}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 ${sortOption === 'price-asc' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'}`}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-night-700 ${sortOption === 'price-asc' ? 'bg-brand-600/20 text-brand-300' : 'text-white'}`}
                 >
                   Low to High
                 </button>
                 <button 
                   onClick={() => handleSortChange('price-desc')}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 ${sortOption === 'price-desc' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'}`}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-night-700 ${sortOption === 'price-desc' ? 'bg-brand-600/20 text-brand-300' : 'text-white'}`}
                 >
                   High to Low
                 </button>
                 
-                <div className="text-xs uppercase text-cyan-500/70 px-3 py-1 border-b border-cyan-500/20 border-t border-cyan-500/20">
+                <div className="text-xs uppercase text-brand-400 px-3 py-1.5 border-b border-night-700 border-t border-night-700">
                   Volume
                 </div>
                 <button 
                   onClick={() => handleSortChange('volume-asc')}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 ${sortOption === 'volume-asc' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'}`}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-night-700 ${sortOption === 'volume-asc' ? 'bg-brand-600/20 text-brand-300' : 'text-white'}`}
                 >
                   Low to High
                 </button>
                 <button 
                   onClick={() => handleSortChange('volume-desc')}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 ${sortOption === 'volume-desc' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'}`}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-night-700 ${sortOption === 'volume-desc' ? 'bg-brand-600/20 text-brand-300' : 'text-white'}`}
                 >
                   High to Low
                 </button>
                 
-                <div className="border-t border-cyan-500/20">
+                <div className="border-t border-night-700">
                   <button 
-                    onClick={() => handleSortChange('default')}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 ${sortOption === 'default' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'}`}
+                    onClick={() => handleSortChange('price-desc')}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-night-700 ${sortOption === 'price-desc' ? 'bg-brand-600/20 text-brand-300' : 'text-white'}`}
                   >
-                    Default Order
+                    Default: Price (High-Low)
                   </button>
                 </div>
               </div>
@@ -432,9 +433,9 @@ export default function MarketPage() {
           
           <button 
             onClick={refreshData}
-            className="bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
+            className="bg-night-800 hover:bg-night-700 text-white rounded-md px-4 py-2 flex items-center gap-2 transition-all border border-night-700"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-brand-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
             </svg>
             Refresh
@@ -455,11 +456,13 @@ export default function MarketPage() {
       {/* Mobile Header & Controls */}
       <div className="sm:hidden mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-extrabold tracking-widest text-cyan-300 drop-shadow-glow animate-pulse">NFL Market</h1>
+          <h1 className="text-3xl font-display font-bold text-white">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-brand-600">NFL</span> Market
+          </h1>
           <div className="flex items-center gap-2">
             <button 
               onClick={toggleMobileFilter}
-              className="bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded-full p-2 flex items-center transition-all"
+              className="bg-night-800 hover:bg-night-700 text-brand-400 rounded-md p-2 flex items-center transition-all border border-night-700"
               aria-label="Filters"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -469,7 +472,7 @@ export default function MarketPage() {
             
             <button 
               onClick={refreshData}
-              className="bg-gray-800 hover:bg-gray-700 text-cyan-300 rounded-full p-2 flex items-center transition-all"
+              className="bg-night-800 hover:bg-night-700 text-brand-400 rounded-md p-2 flex items-center transition-all border border-night-700"
               aria-label="Refresh"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -486,17 +489,17 @@ export default function MarketPage() {
             placeholder="Search teams..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent pl-10"
+            className="w-full px-4 py-2 bg-night-800 border border-night-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 pl-10"
           />
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-5 h-5 text-night-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
           {searchQuery && (
             <button 
               onClick={clearSearch}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-cyan-300"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-night-400 hover:text-brand-400"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -507,12 +510,12 @@ export default function MarketPage() {
         
         {/* Mobile Filter Dropdown */}
         {mobileFilterOpen && (
-          <div className="bg-gray-800 border border-cyan-500/30 rounded-lg mb-4 overflow-hidden shadow-xl animate-fadeIn">
-            <div className="border-b border-cyan-500/20 p-3 flex justify-between items-center">
-              <span className="text-sm font-medium text-cyan-300">Sort Options</span>
+          <div className="bg-night-800 border border-night-700 rounded-md mb-4 overflow-hidden shadow-xl animate-fadeIn">
+            <div className="border-b border-night-700 p-3 flex justify-between items-center">
+              <span className="text-sm font-medium text-brand-400">Sort Options</span>
               <button 
                 onClick={toggleMobileFilter} 
-                className="text-gray-400 hover:text-cyan-300"
+                className="text-night-400 hover:text-brand-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -527,7 +530,7 @@ export default function MarketPage() {
                   toggleMobileFilter();
                 }}
                 className={`px-3 py-2 rounded-md text-sm text-center ${
-                  sortOption === 'symbol-asc' ? 'bg-cyan-900/50 text-cyan-300' : 'bg-gray-700/50 text-cyan-100'
+                  sortOption === 'symbol-asc' ? 'bg-brand-600/20 text-brand-300 border border-brand-700/50' : 'bg-night-700/50 text-white border border-night-600/30'
                 }`}
               >
                 Symbol A-Z
@@ -538,7 +541,7 @@ export default function MarketPage() {
                   toggleMobileFilter();
                 }}
                 className={`px-3 py-2 rounded-md text-sm text-center ${
-                  sortOption === 'symbol-desc' ? 'bg-cyan-900/50 text-cyan-300' : 'bg-gray-700/50 text-cyan-100'
+                  sortOption === 'symbol-desc' ? 'bg-brand-600/20 text-brand-300 border border-brand-700/50' : 'bg-night-700/50 text-white border border-night-600/30'
                 }`}
               >
                 Symbol Z-A
@@ -549,7 +552,7 @@ export default function MarketPage() {
                   toggleMobileFilter();
                 }}
                 className={`px-3 py-2 rounded-md text-sm text-center ${
-                  sortOption === 'price-asc' ? 'bg-cyan-900/50 text-cyan-300' : 'bg-gray-700/50 text-cyan-100'
+                  sortOption === 'price-asc' ? 'bg-brand-600/20 text-brand-300 border border-brand-700/50' : 'bg-night-700/50 text-white border border-night-600/30'
                 }`}
               >
                 Price ↓
@@ -560,7 +563,7 @@ export default function MarketPage() {
                   toggleMobileFilter();
                 }}
                 className={`px-3 py-2 rounded-md text-sm text-center ${
-                  sortOption === 'price-desc' ? 'bg-cyan-900/50 text-cyan-300' : 'bg-gray-700/50 text-cyan-100'
+                  sortOption === 'price-desc' ? 'bg-brand-600/20 text-brand-300 border border-brand-700/50' : 'bg-night-700/50 text-white border border-night-600/30'
                 }`}
               >
                 Price ↑
@@ -571,7 +574,7 @@ export default function MarketPage() {
                   toggleMobileFilter();
                 }}
                 className={`px-3 py-2 rounded-md text-sm text-center ${
-                  sortOption === 'volume-asc' ? 'bg-cyan-900/50 text-cyan-300' : 'bg-gray-700/50 text-cyan-100'
+                  sortOption === 'volume-asc' ? 'bg-brand-600/20 text-brand-300 border border-brand-700/50' : 'bg-night-700/50 text-white border border-night-600/30'
                 }`}
               >
                 Volume ↓
@@ -582,7 +585,7 @@ export default function MarketPage() {
                   toggleMobileFilter();
                 }}
                 className={`px-3 py-2 rounded-md text-sm text-center ${
-                  sortOption === 'volume-desc' ? 'bg-cyan-900/50 text-cyan-300' : 'bg-gray-700/50 text-cyan-100'
+                  sortOption === 'volume-desc' ? 'bg-brand-600/20 text-brand-300 border border-brand-700/50' : 'bg-night-700/50 text-white border border-night-600/30'
                 }`}
               >
                 Volume ↑
@@ -591,20 +594,20 @@ export default function MarketPage() {
             
             <button 
               onClick={() => {
-                handleSortChange('default');
+                handleSortChange('price-desc');
                 toggleMobileFilter();
               }}
-              className={`w-full p-2 border-t border-cyan-500/20 text-sm ${
-                sortOption === 'default' ? 'bg-cyan-900/30 text-cyan-300' : 'text-cyan-100'
+              className={`w-full p-2 border-t border-night-700 text-sm ${
+                sortOption === 'price-desc' ? 'bg-brand-600/10 text-brand-300' : 'text-white hover:bg-night-700'
               }`}
             >
-              Default Order
+              Default: Price (High-Low)
             </button>
           </div>
         )}
         
         {/* Current Sort Indicator */}
-        <div className="flex justify-between items-center text-xs text-cyan-400/70 mb-2 px-1">
+        <div className="flex justify-between items-center text-xs text-night-400 mb-2 px-1">
           <div>
             {filteredTeams.length} {filteredTeams.length === 1 ? 'team' : 'teams'} found
           </div>
@@ -626,14 +629,14 @@ export default function MarketPage() {
       `}} />
       
       {loading ? (
-        <div className="text-center text-cyan-200 font-mono py-20">
-          <div className="inline-block w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <div className="text-center text-white font-mono py-20">
+          <div className="inline-block w-12 h-12 border-4 border-brand-400 border-t-transparent rounded-full animate-spin mb-4"></div>
           <p>Loading teams...</p>
         </div>
       ) : (
         <>
           {/* Desktop view - grid layout */}
-          <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {filteredTeams.map(team => (
               <TeamCard
                 key={`desktop-${team._id}`}
@@ -643,6 +646,7 @@ export default function MarketPage() {
                 onBuy={t => setModal({ open: true, type: 'buy', team: t })}
                 onSell={t => setModal({ open: true, type: 'sell', team: t })}
                 highlighted={highlighted === team._id}
+                refreshTrigger={refreshKey}
               />
             ))}
           </div>
@@ -667,6 +671,7 @@ export default function MarketPage() {
                       onBuy={t => setModal({ open: true, type: 'buy', team: t })}
                       onSell={t => setModal({ open: true, type: 'sell', team: t })}
                       highlighted={highlighted === team._id}
+                      refreshTrigger={refreshKey}
                     />
                   </div>
                 ))}
@@ -675,13 +680,13 @@ export default function MarketPage() {
               {/* Empty state for search results */}
               {filteredTeams.length === 0 && searchQuery && (
                 <div className="py-16 text-center">
-                  <svg className="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="mx-auto h-12 w-12 text-night-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="mt-4 text-cyan-300/70">No teams match "{searchQuery}"</p>
+                  <p className="mt-4 text-night-300">No teams match "{searchQuery}"</p>
                   <button 
                     onClick={clearSearch} 
-                    className="mt-2 text-cyan-400 hover:underline"
+                    className="mt-2 text-brand-400 hover:text-brand-300 transition-colors"
                   >
                     Clear search
                   </button>
@@ -694,7 +699,7 @@ export default function MarketPage() {
                   {filteredTeams.map((_, i) => (
                     <div 
                       key={`indicator-${i}`} 
-                      className={`h-1.5 rounded-full transition-all duration-300 ${i === activeCardIndex ? 'w-4 bg-cyan-400' : 'w-1.5 bg-gray-600'}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${i === activeCardIndex ? 'w-4 bg-brand-400' : 'w-1.5 bg-night-600'}`}
                       onClick={() => {
                         if (scrollContainerRef.current) {
                           const cardWidth = scrollContainerRef.current.clientWidth * 0.85;
@@ -713,13 +718,13 @@ export default function MarketPage() {
               {/* Scroll hint arrows - only shown when there are multiple cards */}
               {filteredTeams.length > 1 && (
                 <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 flex justify-between px-2 pointer-events-none">
-                  <div className={`p-2 rounded-full bg-gray-900/50 backdrop-blur-sm ${activeCardIndex === 0 ? 'opacity-30' : 'opacity-70'}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className={`p-2 rounded-full bg-night-900/50 backdrop-blur-sm ${activeCardIndex === 0 ? 'opacity-30' : 'opacity-70'}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </div>
-                  <div className={`p-2 rounded-full bg-gray-900/50 backdrop-blur-sm ${activeCardIndex === filteredTeams.length - 1 ? 'opacity-30' : 'opacity-70'}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className={`p-2 rounded-full bg-night-900/50 backdrop-blur-sm ${activeCardIndex === filteredTeams.length - 1 ? 'opacity-30' : 'opacity-70'}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -729,18 +734,18 @@ export default function MarketPage() {
             
             {/* Current card info */}
             {filteredTeams.length > 0 && (
-              <div className="text-center text-xs text-cyan-400/70 mt-1">
+              <div className="text-center text-xs text-night-400 mt-1">
                 {activeCardIndex + 1} of {filteredTeams.length}
               </div>
             )}
           </div>
           
           {filteredTeams.length === 0 && !searchQuery && (
-            <div className="col-span-full text-center py-10 text-cyan-300/70">
+            <div className="col-span-full text-center py-10 text-night-300">
               <p className="text-lg">No teams match your filter criteria</p>
               <button 
                 onClick={resetFilters}
-                className="mt-2 text-cyan-400 hover:underline"
+                className="mt-2 text-brand-400 hover:text-brand-300 transition-colors"
               >
                 Reset Filters
               </button>

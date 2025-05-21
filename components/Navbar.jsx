@@ -228,167 +228,188 @@ export default function Navbar() {
   console.log('Render navbar. Auth state:', authSource, 'User:', user, 'Balance:', safeBalance);
 
   return (
-    <nav className="w-full bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 py-3 md:py-4 px-3 md:px-6 flex items-center justify-center shadow-xl border-b-2 border-cyan-500/30 relative z-20">
-      <div className="flex gap-2 md:gap-6 items-center w-full max-w-7xl justify-between">
-        {/* Logo/Brand - visible on both mobile and desktop */}
-        <div className="flex items-center">
-          <Link href="/" className="text-cyan-300 no-underline">
-            <h1 className="m-0 font-extrabold text-base md:text-xl">
-              <span className="text-cyan-300">DEGEN</span>
-              <span className="text-cyan-400 text-sm md:text-base ml-1">FUTURES</span>
-            </h1>
-          </Link>
-        </div>
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex gap-6">
-          {navLinks.map(({ href, label }) => {
-            const active = router.pathname === href;
-            return (
-              <Link key={href} href={href} className={`relative px-4 py-2 rounded-lg font-bold tracking-widest text-cyan-200 transition-all duration-200
-                ${active ? 'bg-cyan-700/30 text-cyan-300 shadow-[0_0_12px_2px_#0ff3fc55] border border-cyan-400' : 'hover:bg-cyan-800/20 hover:text-cyan-100'}`}
-                style={active ? { textShadow: '0 0 8px #0ff3fc' } : {}}
-              >
-                {label}
-                {active && (
-                  <span className="absolute left-1/2 -bottom-1 w-2 h-2 bg-cyan-400 rounded-full blur-sm animate-pulse" style={{ transform: 'translateX(-50%)' }} />
-                )}
+    <>
+      <nav className="bg-night-900/80 backdrop-blur-md border-b border-night-800/80 sticky top-0 z-50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and brand */}
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center">
+                <span className="text-xl font-display font-extrabold text-white mr-1">DEGEN</span>
+                <span className="text-lg font-display font-medium text-brand-400">FUTURES</span>
               </Link>
-            );
-          })}
-        </div>
-
-        {/* Mobile & Desktop Auth Buttons */}
-        <div className="flex gap-2 md:gap-4 items-center">
-          {user ? (
-            <>
-              {/* Balance display - desktop */}
-              <button 
-                onClick={openBalanceModal}
-                className="hidden md:flex items-center gap-1 text-cyan-200 font-mono text-sm px-3 py-1 rounded bg-cyan-800/40 border border-cyan-700 hover:bg-cyan-700/50 transition-colors"
-              >
-                <span className="font-semibold">
-                  ${safeBalance.toFixed(2)}
-                </span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </button>
-              
-              <span className="hidden md:inline text-cyan-200 font-mono text-sm px-3 py-1 rounded bg-cyan-900/40 border border-cyan-700">
-                {user.email}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="hidden md:block px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-400 hover:to-pink-600 text-white font-bold shadow-md tracking-widest text-xs md:text-sm transition-all duration-200 focus:ring-2 focus:ring-pink-300 focus:ring-opacity-50"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="hidden md:inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold shadow-md tracking-widest text-sm transition-all duration-200 focus:ring-2 focus:ring-cyan-300 focus:ring-opacity-50">
-                Login
-              </Link>
-              <Link href="/register" className="hidden md:inline-block px-4 py-2 rounded-lg bg-gradient-to-r from-gray-800 to-cyan-700 hover:from-gray-700 hover:to-cyan-600 text-cyan-100 font-bold shadow-md tracking-widest text-sm border border-cyan-400/40 transition-all duration-200">
-                Register
-              </Link>
-              <Link href="/login" className="md:hidden px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold shadow-md tracking-widest text-xs">
-                Login
-              </Link>
-            </>
-          )}
-
-          {/* Mobile menu toggle button */}
-          <button 
-            onClick={toggleMobileMenu}
-            className="md:hidden flex flex-col justify-center items-center w-10 h-10 p-2 rounded-lg bg-cyan-800/20 border border-cyan-700/40 focus:outline-none"
-            aria-label="Toggle mobile menu"
-          >
-            <span className={`bg-cyan-300 h-0.5 w-5 rounded-lg transition-all duration-200 mb-1 ${mobileMenuOpen ? 'transform rotate-45 translate-y-1.5' : ''}`} />
-            <span className={`bg-cyan-300 h-0.5 w-5 rounded-lg transition-all duration-200 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-            <span className={`bg-cyan-300 h-0.5 w-5 rounded-lg transition-all duration-200 mt-1 ${mobileMenuOpen ? 'transform -rotate-45 -translate-y-1.5' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu - Slide down panel */}
-      <div 
-        className={`absolute top-full left-0 right-0 bg-gray-900/95 backdrop-blur-sm shadow-lg border-b border-cyan-500/30 transition-all duration-300 overflow-hidden md:hidden ${
-          mobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="flex flex-col p-3 gap-2">
-          {user && (
-            <button 
-              onClick={openBalanceModal}
-              className="flex items-center justify-between px-4 py-3 rounded-md bg-cyan-800/40 border border-cyan-700 text-cyan-200"
-            >
-              <span className="font-medium">Balance</span>
-              <span className="font-mono text-cyan-300 font-bold">${safeBalance.toFixed(2)}</span>
-            </button>
-          )}
-          
-          {navLinks.map(({ href, label }) => {
-            const active = router.pathname === href;
-            return (
-              <Link
-                key={`mobile-${href}`}
-                href={href}
-                className={`px-4 py-3 rounded-md font-bold text-center ${
-                  active 
-                    ? 'bg-cyan-700/30 text-cyan-300 shadow-inner border border-cyan-400/50' 
-                    : 'text-cyan-200 bg-gray-800/50 border border-gray-700/50'
-                }`}
-              >
-                {label}
-              </Link>
-            );
-          })}
-          
-          {!user && (
-            <Link 
-              href="/register" 
-              className="mt-2 px-4 py-3 rounded-md bg-gradient-to-r from-gray-800 to-cyan-800 text-cyan-100 font-bold shadow-md text-center border border-cyan-400/40"
-            >
-              Register
-            </Link>
-          )}
-          
-          {user && (
-            <>
-              <div className="mt-2 p-3 bg-gray-800/50 rounded-md border border-gray-700/50">
-                <p className="text-xs text-center text-cyan-200 font-mono mb-1 truncate">
-                  {user.email}
-                </p>
+            </div>
+            
+            {/* Desktop navigation */}
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-center space-x-2">
+                {navLinks.map((link) => {
+                  const isActive = router.pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-brand-600/90 text-white shadow-md shadow-brand-600/20'
+                          : 'text-night-300 hover:bg-night-800 hover:text-white'
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
               </div>
+            </div>
+            
+            {/* User section - desktop */}
+            <div className="hidden md:flex items-center gap-3">
+              {user ? (
+                <>
+                  <button
+                    onClick={openBalanceModal}
+                    className="bg-night-800 hover:bg-night-700 text-white px-3 py-1.5 rounded-md flex items-center font-medium text-sm transition-all group relative border border-night-700"
+                  >
+                    <span className="font-mono mr-1 text-brand-400 group-hover:text-brand-300">$</span>
+                    <span className="font-mono tracking-tight">
+                      {balance.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                    <span className="ml-1 text-xs text-night-400 group-hover:text-night-300">+</span>
+                  </button>
+                  
+                  <div className="text-sm text-night-300 px-3 py-1.5 rounded-md bg-night-800/50 border border-night-700/50">
+                    {user.email}
+                  </div>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-500/80 hover:bg-red-500 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-all shadow-md hover:shadow-red-500/20"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="bg-night-800 hover:bg-night-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-md text-sm font-medium shadow-md hover:shadow-brand-600/20 transition-all"
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
+            </div>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center">
               <button
-                onClick={handleLogout}
-                className="mt-2 px-4 py-3 rounded-md bg-gradient-to-r from-pink-600 to-pink-800 text-white font-bold shadow-md text-center"
+                onClick={toggleMobileMenu}
+                className="inline-flex items-center justify-center p-2 rounded-md text-night-300 hover:text-white hover:bg-night-800 focus:outline-none"
               >
-                Logout
+                <span className="sr-only">Open main menu</span>
+                {!mobileMenuOpen ? (
+                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                ) : (
+                  <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
               </button>
-            </>
-          )}
+            </div>
+          </div>
         </div>
-      </div>
+        
+        {/* Mobile menu */}
+        <div className={`${mobileMenuOpen ? 'block' : 'hidden'} md:hidden backdrop-blur-md`}>
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-night-900/95 border-y border-night-800/80 shadow-lg">
+            {navLinks.map((link) => {
+              const isActive = router.pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${
+                    isActive
+                      ? 'bg-brand-600/90 text-white'
+                      : 'text-night-300 hover:bg-night-800 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            
+            {/* Mobile user section */}
+            <div className="pt-4 pb-3 border-t border-night-800">
+              {user ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-3">
+                    <div className="text-sm text-night-300">
+                      {user.email}
+                    </div>
+                    <button
+                      onClick={openBalanceModal}
+                      className="bg-night-800 hover:bg-night-700 text-white px-3 py-1.5 rounded-md flex items-center text-sm transition-all"
+                    >
+                      <span className="font-mono mr-1 text-brand-400">$</span>
+                      <span className="font-mono tracking-tight">
+                        {balance.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                      <span className="ml-1 text-xs text-night-400">+</span>
+                    </button>
+                  </div>
+                  <div className="px-3">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full bg-red-500/80 hover:bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-all"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2 px-3">
+                  <Link
+                    href="/login"
+                    className="block w-full bg-night-800 hover:bg-night-700 text-white px-4 py-2 rounded-md text-sm text-center font-medium transition-all"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="block w-full bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-md text-sm text-center font-medium shadow-md hover:shadow-brand-600/20 transition-all"
+                  >
+                    Register
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
       
-      {/* Balance Modal */}
-      <BalanceModal 
-        open={balanceModalOpen} 
+      {/* Balance modal */}
+      <BalanceModal
+        isOpen={balanceModalOpen}
         onClose={closeBalanceModal}
-        currentBalance={safeBalance}
         onAddBalance={handleAddBalance}
         loading={loading}
         error={error}
       />
-      
-      {/* Add animations */}
-      <style jsx>{`
-        .drop-shadow-glow {
-          filter: drop-shadow(0 0 8px rgba(103, 232, 249, 0.4));
-        }
-      `}</style>
-    </nav>
+    </>
   );
 } 

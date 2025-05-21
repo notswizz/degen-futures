@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
+import PriceChart from './PriceChart';
 
-export default function TeamCard({ id, team, userShares, onBuy, onSell, highlighted }) {
+export default function TeamCard({ id, team, userShares, onBuy, onSell, highlighted, refreshTrigger = 0 }) {
   const cardRef = useRef(null);
 
   // Add pulse animation when highlighted
@@ -43,26 +44,41 @@ export default function TeamCard({ id, team, userShares, onBuy, onSell, highligh
     <div 
       id={id}
       ref={cardRef}
-      className={`rounded-xl shadow-xl overflow-hidden transition-transform duration-300 h-full flex flex-col ${
-        highlighted ? 'ring-2 ring-pink-500 ring-offset-2 ring-offset-gray-900' : ''
+      className={`rounded-xl overflow-hidden transition-all duration-300 h-full flex flex-col backdrop-blur-sm ${
+        highlighted ? 'ring-2 ring-brand-400 ring-offset-2 ring-offset-night-900 translate-y-[-4px]' : 'hover:translate-y-[-4px]'
       }`}
       style={{ 
-        background: secondaryColor, 
-        boxShadow: `0 10px 30px -5px ${primaryColor}40, 0 0 5px ${secondaryColor}80`
+        background: `linear-gradient(180deg, ${primaryColor}dd, ${secondaryColor}ee)`,
+        boxShadow: `0 10px 30px -5px ${primaryColor}40, 0 0 5px ${secondaryColor}80`,
+        borderLeft: `1px solid ${primaryColor}30`,
+        borderTop: `1px solid ${primaryColor}20`,
+        borderRight: `1px solid ${secondaryColor}20`,
+        borderBottom: `1px solid ${secondaryColor}30`,
       }}
     >
       {/* Header with primary color */}
       <div 
-        className="p-3 flex items-center justify-between relative"
-        style={{ backgroundColor: primaryColor, color: primaryTextColor }}
+        className="p-3 flex items-center justify-between relative overflow-hidden"
+        style={{ 
+          background: `linear-gradient(to right, ${primaryColor}, ${primaryColor}dd)`,
+          color: primaryTextColor,
+          borderBottom: `2px solid ${secondaryColor}50`
+        }}
       >
-        <span className="text-2xl font-extrabold tracking-widest">{team.symbol}</span>
+        {/* Background sparkles */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="sparkle absolute top-2 left-4 w-1 h-1 rounded-full bg-white opacity-60"></div>
+          <div className="sparkle absolute top-4 right-6 w-1 h-1 rounded-full bg-white opacity-60" style={{ animationDelay: '0.5s' }}></div>
+          <div className="sparkle absolute bottom-2 left-10 w-1 h-1 rounded-full bg-white opacity-60" style={{ animationDelay: '1s' }}></div>
+        </div>
+        
+        <span className="text-2xl font-display font-extrabold tracking-wider relative z-10">{team.symbol}</span>
         
         {/* Enhanced Price tag */}
         <div 
-          className="px-3 py-1 font-mono text-sm font-bold flex items-center"
+          className="px-3 py-1 font-mono text-sm font-bold flex items-center relative overflow-hidden"
           style={{ 
-            backgroundColor: secondaryColor, 
+            backgroundColor: `${secondaryColor}cc`, 
             color: secondaryTextColor,
             clipPath: 'polygon(10px 0, 100% 0, 100% 100%, 0 100%)',
             boxShadow: `0 3px 10px rgba(0,0,0,0.3)`,
@@ -75,41 +91,81 @@ export default function TeamCard({ id, team, userShares, onBuy, onSell, highligh
         </div>
       </div>
       
-      {/* Team name bar */}
-      <div className="py-1 px-2 text-center" style={{ backgroundColor: `${primaryColor}90`, color: primaryTextColor }}>
-        <span className="text-sm font-medium truncate block">{team.name}</span>
+      {/* Team name bar - removed toggle button */}
+      <div 
+        className="py-1.5 px-3" 
+        style={{ 
+          background: `linear-gradient(to right, ${primaryColor}80, ${primaryColor}50)`, 
+          color: primaryTextColor,
+          borderBottom: `1px solid ${secondaryColor}30`
+        }}
+      >
+        <span className="text-sm font-medium font-display truncate block">{team.name}</span>
+      </div>
+      
+      {/* Price Chart - Always displayed */}
+      <div className="w-full bg-night-900/50 border-b border-night-800/80 overflow-hidden">
+        <PriceChart 
+          teamId={team._id} 
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+          refreshTrigger={refreshTrigger}
+        />
       </div>
       
       {/* Content */}
-      <div className="p-4 flex-grow flex flex-col justify-between" style={{ color: secondaryTextColor }}>
-        <div className="grid grid-cols-2 gap-y-2 mb-3">
-          <div className="text-xs opacity-80">Market Cap</div>
+      <div 
+        className="p-4 flex-grow flex flex-col justify-between relative z-10" 
+        style={{ 
+          color: secondaryTextColor,
+          background: `linear-gradient(to bottom, ${secondaryColor}aa, ${secondaryColor}dd)`
+        }}
+      >
+        <div className="grid grid-cols-2 gap-y-2.5 mb-3">
+          <div className="text-xs opacity-80 font-medium">Market Cap</div>
           <div className="text-xs font-bold text-right">${team.marketCap.toLocaleString()}</div>
           
-          <div className="text-xs opacity-80">Volume</div>
+          <div className="text-xs opacity-80 font-medium">Volume</div>
           <div className="text-xs font-bold text-right">${team.volume.toLocaleString()}</div>
           
           {typeof userShares === 'number' && (
             <>
-              <div className="text-xs opacity-80">Your Shares</div>
+              <div className="text-xs opacity-80 font-medium">Your Shares</div>
               <div 
-                className="text-xs font-bold text-right"
-                style={{ color: primaryColor }}
+                className="text-xs font-bold text-right relative"
               >
-                {userShares}
+                <span 
+                  className="relative z-10"
+                  style={{ 
+                    color: userShares > 0 ? primaryTextColor : 'inherit',
+                    textShadow: userShares > 0 ? `0 0 10px ${primaryColor}80` : 'none'
+                  }}
+                >
+                  {userShares}
+                </span>
+                {userShares > 0 && (
+                  <span 
+                    className="absolute inset-0 rounded-full opacity-80 -z-10" 
+                    style={{ 
+                      background: primaryColor,
+                      filter: 'blur(4px)',
+                    }}
+                  ></span>
+                )}
               </div>
             </>
           )}
         </div>
         
         {/* Buttons */}
-        <div className="grid grid-cols-2 gap-2 mt-auto">
+        <div className="grid grid-cols-2 gap-3 mt-auto">
           <button
-            className="py-2 rounded-md text-sm font-bold transition-all shadow-md flex items-center justify-center"
+            className="py-2 rounded-md text-sm font-bold transition-all duration-300 shadow-md flex items-center justify-center hover:shadow-lg active:scale-95"
             style={{ 
               backgroundColor: primaryColor, 
               color: primaryTextColor,
-              border: `1px solid ${primaryTextColor}20`
+              border: `1px solid ${primaryTextColor}20`,
+              boxShadow: `0 4px 12px ${primaryColor}40, inset 0 1px 1px ${primaryTextColor}20`
             }}
             onClick={() => onBuy(team)}
           >
@@ -119,13 +175,14 @@ export default function TeamCard({ id, team, userShares, onBuy, onSell, highligh
             Buy
           </button>
           <button
-            className={`py-2 rounded-md text-sm font-bold transition-all shadow-md flex items-center justify-center ${
-              !userShares || userShares <= 0 ? 'opacity-50 cursor-not-allowed' : ''
+            className={`py-2 rounded-md text-sm font-bold transition-all duration-300 shadow-md flex items-center justify-center active:scale-95 ${
+              !userShares || userShares <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
             }`}
             style={{ 
               backgroundColor: secondaryColor, 
               color: secondaryTextColor,
-              border: `1px solid ${secondaryTextColor}20`
+              border: `1px solid ${secondaryTextColor}20`,
+              boxShadow: `0 4px 12px ${secondaryColor}30, inset 0 1px 1px ${secondaryTextColor}10`
             }}
             onClick={() => onSell(team)}
             disabled={!userShares || userShares <= 0}

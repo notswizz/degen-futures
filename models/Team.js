@@ -6,6 +6,7 @@ const TeamSchema = new mongoose.Schema({
   totalSupply: { type: Number, default: 0 },
   marketCap: { type: Number, default: 0 },
   volume: { type: Number, default: 0 },
+  price: { type: Number, default: 1.0 }, // Current price based on bonding curve
   primaryColor: { type: String, default: '#004c54' }, // Default cyan-like color
   secondaryColor: { type: String, default: '#000000' }, // Default black
   createdAt: { type: Date, default: Date.now },
