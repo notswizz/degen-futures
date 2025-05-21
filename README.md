@@ -1,8 +1,25 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
 
+## Degen Futures
+
+Fantasy futures market for NFL teams. Buy & sell shares, ride the hype, and win the pot if your team takes the Super Bowl. Powered by a live bonding curve with 2% fee on every trade going to the winner!
+
 ## Getting Started
 
-First, run the development server:
+First, make sure you have your environment variables set up in a `.env.local` file:
+
+```
+# OpenAI API Key
+OPENAI_API_KEY=sk-your_openai_api_key_here
+
+# MongoDB URI (if using the full app with database)
+MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/your-database
+
+# JWT Secret (for authentication)
+JWT_SECRET=your_jwt_secret_key_here
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -16,13 +33,21 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Features
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+- **Bonding Curve Mechanism**: Prices are determined by a polynomial bonding curve formula
+- **Real-time Trading**: Buy and sell shares of NFL teams
+- **Prize Pot**: 2% fee on all transactions goes to the pot
+- **Winner Distribution**: After the Super Bowl, pot is distributed to holders of the winning team
+- **Chatbot Assistant**: Built-in AI chatbot that explains how the game works
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## How It Works
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Register/Login**: Create an account to start trading
+2. **Market**: Browse available teams and their current prices
+3. **Portfolio**: Track your holdings and their current value
+4. **History**: View your transaction history
+5. **Prize Pot**: See the current pot value
 
 ## Learn More
 
