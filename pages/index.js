@@ -176,7 +176,7 @@ export default function HomePage() {
         </section>
         
         <footer className="mt-auto pt-10 pb-4 w-full text-center text-cyan-500/60 text-xs">
-          © 2024 Degen Futures. All rights reserved. Not financial advice.
+          © 2025 Degen Futures. All rights reserved. Not financial advice.
         </footer>
       </main>
     </>

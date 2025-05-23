@@ -122,13 +122,49 @@ export default function PriceChart({
     return null;
   };
 
+  // Time frame options - extracted as a separate component to reuse in multiple places
+  const TimeframeOptions = () => (
+    <div className="flex space-x-1 text-xs">
+      <button 
+        className={`px-2 py-0.5 rounded ${timeframe === 'day' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+        onClick={() => setTimeframe('day')}
+      >
+        24h
+      </button>
+      <button 
+        className={`px-2 py-0.5 rounded ${timeframe === 'week' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+        onClick={() => setTimeframe('week')}
+      >
+        7d
+      </button>
+      <button 
+        className={`px-2 py-0.5 rounded ${timeframe === 'month' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+        onClick={() => setTimeframe('month')}
+      >
+        30d
+      </button>
+      <button 
+        className={`px-2 py-0.5 rounded ${timeframe === 'all' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
+        onClick={() => setTimeframe('all')}
+      >
+        All
+      </button>
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="h-48 flex items-center justify-center bg-gray-900/30 rounded-lg">
-        <div className="animate-pulse flex space-x-2">
-          <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-          <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-          <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+      <div className="h-48 flex flex-col">
+        <div className="flex justify-between items-center mb-2 px-2">
+          <h3 className="text-xs font-medium text-gray-400">Price History</h3>
+          <TimeframeOptions />
+        </div>
+        <div className="flex-grow flex items-center justify-center bg-gray-900/30 rounded-lg">
+          <div className="animate-pulse flex space-x-2">
+            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+          </div>
         </div>
       </div>
     );
@@ -136,16 +172,28 @@ export default function PriceChart({
 
   if (error) {
     return (
-      <div className="h-48 flex items-center justify-center bg-gray-900/30 rounded-lg">
-        <p className="text-sm text-red-400">Error loading chart data</p>
+      <div className="h-48 flex flex-col">
+        <div className="flex justify-between items-center mb-2 px-2">
+          <h3 className="text-xs font-medium text-gray-400">Price History</h3>
+          <TimeframeOptions />
+        </div>
+        <div className="flex-grow flex items-center justify-center bg-gray-900/30 rounded-lg">
+          <p className="text-sm text-red-400">Error loading chart data</p>
+        </div>
       </div>
     );
   }
 
   if (filteredData.length === 0) {
     return (
-      <div className="h-48 flex items-center justify-center bg-gray-900/30 rounded-lg">
-        <p className="text-sm text-gray-400">No price history available</p>
+      <div className="h-48 flex flex-col">
+        <div className="flex justify-between items-center mb-2 px-2">
+          <h3 className="text-xs font-medium text-gray-400">Price History</h3>
+          <TimeframeOptions />
+        </div>
+        <div className="flex-grow flex items-center justify-center bg-gray-900/30 rounded-lg">
+          <p className="text-sm text-gray-400">No price history available for this time frame</p>
+        </div>
       </div>
     );
   }
@@ -154,32 +202,7 @@ export default function PriceChart({
     <div className="w-full h-48 pt-1">
       <div className="flex justify-between items-center mb-2 px-2">
         <h3 className="text-xs font-medium text-gray-400">Price History</h3>
-        <div className="flex space-x-1 text-xs">
-          <button 
-            className={`px-2 py-0.5 rounded ${timeframe === 'day' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-            onClick={() => setTimeframe('day')}
-          >
-            24h
-          </button>
-          <button 
-            className={`px-2 py-0.5 rounded ${timeframe === 'week' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-            onClick={() => setTimeframe('week')}
-          >
-            7d
-          </button>
-          <button 
-            className={`px-2 py-0.5 rounded ${timeframe === 'month' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-            onClick={() => setTimeframe('month')}
-          >
-            30d
-          </button>
-          <button 
-            className={`px-2 py-0.5 rounded ${timeframe === 'all' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-            onClick={() => setTimeframe('all')}
-          >
-            All
-          </button>
-        </div>
+        <TimeframeOptions />
       </div>
       
       <ResponsiveContainer width="100%" height="100%">
