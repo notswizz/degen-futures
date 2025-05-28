@@ -2,6 +2,7 @@ import '../styles/globals.css';
 import Navbar from '../components/Navbar';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
+import { Analytics } from "@vercel/analytics/next";
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function App({ Component, pageProps }) {
     <>
       <Navbar />
       <Component {...pageProps} />
+      <Analytics />
     </>
   );
 }

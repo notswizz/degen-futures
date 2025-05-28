@@ -11,6 +11,7 @@
     "update-links": "node scripts/update-next-links.js"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.5.0",
